@@ -6,7 +6,7 @@ import traceback
 
 initial_extensions = ['cogs.frames']
 
-prefix = "&"
+prefix = "-"
 bot = commands.Bot(command_prefix=prefix)
 
 if __name__ == '__main__':
