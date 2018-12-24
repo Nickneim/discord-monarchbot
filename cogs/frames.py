@@ -56,7 +56,7 @@ class Frames:
                   'crosshair', 'cry', 'dab1', 'damn', 'dg', 'dick', 'die', 'dole', 'elon', 'fuckyou',
                   'funwaa', 'gag', 'garf2', 'garf3', 'garf4', 'garf5', 'gay',
                   'general', 'grinch', 'hhill', 'hillary', 'idub1', 'idub2', 'idub3', 'idub4', 'idub5', 'idub6',
-                  'ifunny', 'jempy', 'jf1', 'jf2', 'kim', 'knuckle', 'liberal', 'lilpeep', 'lilpump',
+                  'ifunny', 'jempy', 'jf1', 'jf2', 'kim', 'knife', 'knuckle', 'liberal', 'lilpeep', 'lilpump',
                   'lrd', 'lynch', 'madvillainy', 'mark', 'meme1', 'nmh',
                   'obama2', 'parental', 'pickle', 'piss', 'preg', 'qotsa', 'rh', 'sam',
                   'sb', 'shapiro', 'shrek', 'shutterstock', 'sketch', 'socks', 'sonic', 'spaghett',
