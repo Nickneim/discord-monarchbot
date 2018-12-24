@@ -5,7 +5,8 @@ from sys import stderr
 import os
 import traceback
 
-initial_extensions = ['cogs.frames']
+initial_extensions = ['cogs.frames',
+                      'cogs.filters']
 
 prefix = "-"
 bot = commands.Bot(command_prefix=prefix)
@@ -26,6 +27,14 @@ async def on_ready():
     print(f'\n\nLogged in as: {bot.user.name} - {bot.user.id}\nVersion: {discord.__version__}\n')
 
     print(f'Successfully logged in and booted...!')
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        return await ctx.send(error)
+    print(f'Ignoring exception in command {ctx.command}:', file=stderr)
+    traceback.print_exception(type(error), error, error.__traceback__, file=stderr)
 
 
 bot.run(os.environ['TOKEN'], bot=True, reconnect=True)

@@ -138,11 +138,9 @@ class Frames:
             frame = Image.open(frame_path)
         except IOError:
             print(frame_path)
-            await ctx.send("Couldn't open frame.")
-            return
+            return await ctx.send("Couldn't open frame.")
         if not await download_last_image(ctx):
-            await ctx.send("Couldn't find valid image.")
-            return
+            return await ctx.send("Couldn't find valid image.")
         try:
             image = Image.open(image_path)
         except IOError:
@@ -154,24 +152,20 @@ class Frames:
             try:
                 image.save(image_path)
             except IOError:
-                await ctx.send("Image couldn't be saved.")
-                return
+                return await ctx.send("Image couldn't be saved.")
 
         elif split[0] == "template":
             if len(split) != 5:
-                await ctx.send("Command description is invalid")
-                return
+                return await ctx.send("Command description is invalid")
             try:
                 box = tuple(int(x) for x in split[1:])
             except ValueError:
-                await ctx.send("Template coordinates are invalid.")
-                return
+                return await ctx.send("Template coordinates are invalid.")
             image_inside_frame(image, frame, box)
             try:
                 frame.save(image_path)
             except IOError:
-                await ctx.send("Image couldn't be saved.")
-                return
+                return await ctx.send("Image couldn't be saved.")
         else:
             return
         await ctx.send(file=discord.File(image_path))
