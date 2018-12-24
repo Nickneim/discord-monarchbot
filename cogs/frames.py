@@ -53,7 +53,7 @@ class Frames:
         frames = ['ac', 'acab', 'al', 'amouranth', 'bann', 'beatles', 'bjork', 'blond',
                   'blood', 'bop', 'brazzers', 'bulge', 'can', 'cat', 'cj1', 'cnid',
                   'coil1', 'coil2', 'comic1', 'comic2', 'commie', 'conway', 'cooper1', 'cooper2', 'cowboy',
-                  'crosshair', 'cry', 'dab1', 'damn', 'dg', 'dick', 'die', 'dole', 'elon', 'fuckyou',
+                  'crosshair', 'cry', 'dab1', 'damn', 'dg', 'dick', 'die', 'dole', 'elon', 'forklift', 'fuckyou',
                   'funwaa', 'gag', 'garf2', 'garf3', 'garf4', 'garf5', 'gay',
                   'general', 'grinch', 'hhill', 'hillary', 'idub1', 'idub2', 'idub3', 'idub4', 'idub5', 'idub6',
                   'ifunny', 'jempy', 'jf1', 'jf2', 'kim', 'knife', 'knuckle', 'liberal', 'lilpeep', 'lilpump',
