@@ -193,6 +193,7 @@ class Filters:
         image = image.convert("RGB")
         image = ImageOps.invert(image)
         image = ImageOps.grayscale(image)
+        image = image.convert("RGBA")
         try:
             image.save(image_path)
         except IOError:
