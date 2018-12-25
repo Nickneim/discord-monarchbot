@@ -111,6 +111,43 @@ class Filters:
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
+    async def symm(self, ctx, side: str = "left"):
+        side = side.lower()
+        if side not in ('left', 'right', 'up', 'down'):
+            return await ctx.send("Valid sides are 'left', 'right', 'up', and 'down'.")
+        await ctx.send("**processing...**")
+        image_path = str(ctx.channel.id) + '.png'
+        if not await download_last_image(ctx, path=image_path):
+            return await ctx.send("Couldn't find valid image.")
+        try:
+            image = Image.open(image_path)
+        except IOError:
+            return await ctx.send("Last image isn't valid.")
+        w, h = image.size
+        if side == 'left':
+            crop = image.crop((0, 0, w//2, h))
+            crop = ImageOps.mirror(crop)
+            image.paste(crop, (round(w / 2 + 0.1), 0))
+        elif side == 'right':
+            crop = image.crop((round(w / 2 + 0.1), 0, w, h))
+            crop = ImageOps.mirror(crop)
+            image.paste(crop, (0, 0))
+        elif side == 'up':
+            crop = image.crop((0, 0, w, h//2))
+            crop = ImageOps.flip(crop)
+            image.paste(crop, (0, round(h / 2 + 0.1)))
+        elif side == 'down':
+            crop = image.crop((0, round(h / 2 + 0.1), w, h))
+            crop = ImageOps.flip(crop)
+            image.paste(crop, (0, 0))
+        try:
+            image.save(image_path)
+        except IOError:
+            return await ctx.send("Image couldn't be saved.")
+        await ctx.send(file=discord.File(image_path))
+
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command()
     async def posterize(self, ctx):
         await ctx.send("**processing...**")
         image_path = str(ctx.channel.id) + '.png'
@@ -143,8 +180,8 @@ class Filters:
         except IOError:
             return await ctx.send("Last image isn't valid.")
         image = image.convert("RGBA")
-        w = int(image.width * per * .01)
-        h = int(image.height * per * .01)
+        w = image.width * per // 100
+        h = image.height * per // 100
         image.resize((w, h), resample=Image.LANCZOS)
         try:
             image.save(image_path)
