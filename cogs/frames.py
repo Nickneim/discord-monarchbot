@@ -124,8 +124,6 @@ class Frames:
     # func thinggy
     async def on_command_completion(self, ctx):
         command = ctx.command
-        print(command)
-        print(str(command))
         if not command.description:
             return
         split = command.description.split()

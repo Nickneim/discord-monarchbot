@@ -65,8 +65,14 @@ class Filters:
             image = Image.open(image_path)
         except IOError:
             return await ctx.send("Last image isn't valid.")
+        try:
+            alpha = image.getchannel('A')
+        except ValueError:
+            alpha = None
         image = image.convert("RGB")
         image = ImageOps.invert(image)
+        if alpha:
+            image.putalpha(alpha)
         try:
             image.save(image_path)
         except IOError:
@@ -157,7 +163,14 @@ class Filters:
             image = Image.open(image_path)
         except IOError:
             return await ctx.send("Last image isn't valid.")
+        try:
+            alpha = image.getchannel('A')
+        except ValueError:
+            alpha = None
+        image = image.convert("RGB")
         image = ImageOps.posterize(image, 2)
+        if alpha:
+            image.putalpha(alpha)
         try:
             image.save(image_path)
         except IOError:
@@ -200,13 +213,19 @@ class Filters:
             image = Image.open(image_path)
         except IOError:
             return await ctx.send("Last image isn't valid.")
-        image = image.convert('RGB')
         w, h = image.width, image.height
         image = image.resize((int(w ** .75), int(h ** .75)), resample=Image.LANCZOS)
         image = image.resize((int(w ** .88), int(h ** .88)), resample=Image.BILINEAR)
         image = image.resize((int(w ** .9), int(h ** .9)), resample=Image.BICUBIC)
         image = image.resize((w, h), resample=Image.BICUBIC)
+        try:
+            alpha = image.getchannel('A')
+        except ValueError:
+            alpha = None
+        image = image.convert("RGB")
         image = ImageOps.posterize(image, 4)
+        if alpha:
+            image.putalpha(alpha)
         image = ImageEnhance.Sharpness(image).enhance(100.0)
         try:
             image.save(image_path)
@@ -225,12 +244,18 @@ class Filters:
             image = Image.open(image_path)
         except IOError:
             return await ctx.send("Last image isn't valid.")
+        try:
+            alpha = image.getchannel('A')
+        except ValueError:
+            alpha = None
         image = image.filter(ImageFilter.SMOOTH)
         image = image.filter(ImageFilter.CONTOUR)
         image = image.convert("RGB")
         image = ImageOps.invert(image)
         image = ImageOps.grayscale(image)
         image = image.convert("RGBA")
+        if alpha:
+            image.putalpha(alpha)
         try:
             image.save(image_path)
         except IOError:
