@@ -1,3 +1,4 @@
+import io
 import discord
 from discord.ext import commands
 from PIL import Image
@@ -18,32 +19,32 @@ def image_inside_frame(image, frame, box):
     frame.paste(frame_crop, box, frame_crop)
 
 
-def get_message_image(message):
+def get_message_attachment(message, allowed_extensions=('.jpg', '.jpeg', '.png')):
     """Returns the first attachment from 'message' if it exists and it's a recognized image, otherwise returns None"""
     if message.attachments:
         attachment = message.attachments[0]
-        if attachment.filename.endswith(('.jpg', '.jpeg', '.png')):
+        if attachment.filename.endswith(allowed_extensions):
             return attachment
     return None
 
 
-async def download_last_image(ctx, path=None, limit=20):
+async def get_last_image(ctx, limit=20):
     """
-    Downloads the last image in the last 'limit' messages in the 'ctx' channel
-    to 'path' (defaults to <channel_id>.png)
+    Returns the last image in the last 'limit' messages in the 'ctx' channel
+    Raises IOError if last image isn't a valid image
     """
-    if path is None:
-        path = str(ctx.channel.id) + '.png'
-    image = get_message_image(ctx.message)
-    if image:
-        await image.save(path)
-        return True
+    attachment = get_message_attachment(ctx.message)
+    if attachment:
+        f = io.BytesIO()
+        await attachment.save(f)
+        return Image.open(f)
     async for m in ctx.history(before=ctx.message, limit=limit):
-        image = get_message_image(m)
-        if image:
-            await image.save(path)
-            return True
-    return False
+        attachment = get_message_attachment(m)
+        if attachment:
+            f = io.BytesIO()
+            await attachment.save(f)
+            return Image.open(f)
+    return None
 
 
 class Frames:
@@ -107,19 +108,17 @@ class Frames:
     @commands.cooldown(1, 5, commands.BucketType.default)
     @commands.command()
     async def addtestframe(self, ctx):
-        if await download_last_image(ctx):
-            try:
-                test_image = Image.open(str(ctx.channel.id) + '.png')
-            except IOError:
-                await ctx.send("Last image isn't valid.")
-            try:
-                test_image.convert("RGBA").save("frames/testframe.png")
-            except IOError:
-                await ctx.send("Image couldn't be saved.")
-            else:
-                await self.client.send_message(ctx.message.channel, "Changed test frame")
-        else:
-            await ctx.send("Couldn't find valid image.")
+        try:
+            test_image = await get_last_image(ctx)
+        except IOError:
+            return await ctx.send("Last image isn't valid.")
+        if not test_image:
+            return await ctx.send("Couldn't find valid image.")
+        try:
+            test_image.convert("RGBA").save("frames/testframe.png")
+        except IOError:
+            return await ctx.send("Image couldn't be saved.")
+        return await ctx.send("Changed test frame")
 
     # func thinggy
     async def on_command_completion(self, ctx):
@@ -130,27 +129,21 @@ class Frames:
         if split[0] not in ('frame', 'template'):
             return
         await ctx.send("**processing...**")
-        image_path = str(ctx.channel.id) + '.png'
         frame_path = "frames/" + str(command) + ".png"
         try:
             frame = Image.open(frame_path)
         except IOError:
-            print(frame_path)
             return await ctx.send("Couldn't open frame.")
-        if not await download_last_image(ctx):
-            return await ctx.send("Couldn't find valid image.")
         try:
-            image = Image.open(image_path)
+            image = await get_last_image(ctx)
         except IOError:
-            await ctx.send("Last image isn't valid.")
-            return
+            return await ctx.send("Last image isn't valid.")
+        if not image:
+            return await ctx.send("Couldn't find valid image.")
 
         if split[0] == "frame":
             frame_on_image(frame, image)
-            try:
-                image.save(image_path)
-            except IOError:
-                return await ctx.send("Image couldn't be saved.")
+            final_image = image
 
         elif split[0] == "template":
             if len(split) != 5:
@@ -160,13 +153,16 @@ class Frames:
             except ValueError:
                 return await ctx.send("Template coordinates are invalid.")
             image_inside_frame(image, frame, box)
-            try:
-                frame.save(image_path)
-            except IOError:
-                return await ctx.send("Image couldn't be saved.")
+            final_image = frame
         else:
             return
-        await ctx.send(file=discord.File(image_path))
+        with io.BytesIO() as f:
+            try:
+                final_image.save(f, format='png')
+            except IOError:
+                return await ctx.send("Image couldn't be saved.")
+            f.seek(0)
+            await ctx.send(file=discord.File(f, filename='image.png'))
 
 
 def setup(client):
