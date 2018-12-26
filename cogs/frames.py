@@ -47,6 +47,16 @@ async def get_last_image(ctx, limit=20):
     return None
 
 
+async def send_image(ctx, image):
+    with io.BytesIO() as f:
+        try:
+            image.save(f, format='png')
+        except IOError:
+            return await ctx.send("Image couldn't be saved.")
+        f.seek(0)
+        await ctx.send(file=discord.File(f, filename='image.png'))
+
+
 class Frames:
 
     def __init__(self, bot):
@@ -143,7 +153,7 @@ class Frames:
 
         if split[0] == "frame":
             frame_on_image(frame, image)
-            final_image = image
+            await send_image(ctx, image)
 
         elif split[0] == "template":
             if len(split) != 5:
@@ -153,16 +163,9 @@ class Frames:
             except ValueError:
                 return await ctx.send("Template coordinates are invalid.")
             image_inside_frame(image, frame, box)
-            final_image = frame
+            await send_image(ctx, frame)
         else:
             return
-        with io.BytesIO() as f:
-            try:
-                final_image.save(f, format='png')
-            except IOError:
-                return await ctx.send("Image couldn't be saved.")
-            f.seek(0)
-            await ctx.send(file=discord.File(f, filename='image.png'))
 
 
 def setup(client):
