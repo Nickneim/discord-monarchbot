@@ -37,9 +37,12 @@ async def get_image(ctx):
     try:
         image = await get_last_image(ctx)
     except IOError:
-        return await ctx.send("Last image isn't valid.")
+        await ctx.send("Last image isn't valid.")
+        return False
     if not image:
-        return await ctx.send("Couldn't find valid image.")
+        await ctx.send("Couldn't find valid image.")
+        return False
+    return image
 
 
 async def send_image(ctx, image):
