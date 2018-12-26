@@ -228,6 +228,25 @@ class Filters:
             image.putalpha(alpha)
         await send_image(ctx, image)
 
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command()
+    async def rotate(self, ctx, rotation: str = 'right'):
+        await ctx.send("**processing...**")
+        rotation = rotation.lower()
+        if rotation not in ('left', 'right'):
+            return await ctx.send("Rotation must be 'left' or 'right'.")
+        try:
+            image = await get_last_image(ctx)
+        except IOError:
+            return await ctx.send("Last image isn't valid.")
+        if not image:
+            return await ctx.send("Couldn't find valid image.")
+        if rotation == 'left':
+            image = image.transpose(Image.ROTATE_270)
+        else:
+            image = image.transpose(Image.ROTATE_90)
+        await send_image(ctx, image)
+
 
 def setup(bot):
     bot.add_cog(Filters(bot))
