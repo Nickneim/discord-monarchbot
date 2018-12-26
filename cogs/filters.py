@@ -32,6 +32,16 @@ async def get_last_image(ctx, limit=20):
     return None
 
 
+async def get_image(ctx):
+    await ctx.send("**processing...**")
+    try:
+        image = await get_last_image(ctx)
+    except IOError:
+        return await ctx.send("Last image isn't valid.")
+    if not image:
+        return await ctx.send("Couldn't find valid image.")
+
+
 async def send_image(ctx, image):
     with io.BytesIO() as f:
         try:
@@ -50,26 +60,21 @@ class Filters:
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def blur(self, ctx):
-        await ctx.send("**processing...**")
-        try:
-            image = await get_last_image(ctx)
-        except IOError:
-            return await ctx.send("Last image isn't valid.")
+        image = await get_image(ctx)
         if not image:
-            return await ctx.send("Couldn't find valid image.")
+            return
+
         image = image.filter(ImageFilter.BLUR)
+
         await send_image(ctx, image)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def invert(self, ctx):
-        await ctx.send("**processing...**")
-        try:
-            image = await get_last_image(ctx)
-        except IOError:
-            return await ctx.send("Last image isn't valid.")
+        image = await get_image(ctx)
         if not image:
-            return await ctx.send("Couldn't find valid image.")
+            return
+
         try:
             alpha = image.getchannel('A')
         except ValueError:
@@ -78,31 +83,27 @@ class Filters:
         image = ImageOps.invert(image)
         if alpha:
             image.putalpha(alpha)
+
         await send_image(ctx, image)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def flipv(self, ctx):
-        await ctx.send("**processing...**")
-        try:
-            image = await get_last_image(ctx)
-        except IOError:
-            return await ctx.send("Last image isn't valid.")
+        image = await get_image(ctx)
         if not image:
-            return await ctx.send("Couldn't find valid image.")
+            return
+
         image = ImageOps.flip(image)
+
         await send_image(ctx, image)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def fliph(self, ctx):
-        await ctx.send("**processing...**")
-        try:
-            image = await get_last_image(ctx)
-        except IOError:
-            return await ctx.send("Last image isn't valid.")
+        image = await get_image(ctx)
         if not image:
-            return await ctx.send("Couldn't find valid image.")
+            return
+
         image = ImageOps.mirror(image)
         await send_image(ctx, image)
 
@@ -112,13 +113,10 @@ class Filters:
         side = side.lower()
         if side not in ('left', 'right', 'up', 'down'):
             return await ctx.send("Valid sides are 'left', 'right', 'up', and 'down'.")
-        await ctx.send("**processing...**")
-        try:
-            image = await get_last_image(ctx)
-        except IOError:
-            return await ctx.send("Last image isn't valid.")
+        image = await get_image(ctx)
         if not image:
-            return await ctx.send("Couldn't find valid image.")
+            return
+
         w, h = image.size
         if side == 'left':
             crop = image.crop((0, 0, w//2, h))
@@ -136,18 +134,16 @@ class Filters:
             crop = image.crop((0, round(h / 2 + 0.1), w, h))
             crop = ImageOps.flip(crop)
             image.paste(crop, (0, 0))
+
         await send_image(ctx, image)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def posterize(self, ctx):
-        await ctx.send("**processing...**")
-        try:
-            image = await get_last_image(ctx)
-        except IOError:
-            return await ctx.send("Last image isn't valid.")
+        image = await get_image(ctx)
         if not image:
-            return await ctx.send("Couldn't find valid image.")
+            return
+
         try:
             alpha = image.getchannel('A')
         except ValueError:
@@ -156,38 +152,32 @@ class Filters:
         image = ImageOps.posterize(image, 2)
         if alpha:
             image.putalpha(alpha)
+
         await send_image(ctx, image)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def shrink(self, ctx, per: int = 5):
-        await ctx.send("**processing...**")
         if not (1 <= per <= 99):
             return await ctx.send("Percentage must be between 1 and 99")
-        else:
-            per = 5
-        try:
-            image = await get_last_image(ctx)
-        except IOError:
-            return await ctx.send("Last image isn't valid.")
+        image = await get_image(ctx)
         if not image:
-            return await ctx.send("Couldn't find valid image.")
+            return
+
         image = image.convert("RGBA")
         w = image.width * per // 100
         h = image.height * per // 100
         image.resize((w, h), resample=Image.LANCZOS)
+
         await send_image(ctx, image)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def glitch(self, ctx):
-        await ctx.send("**processing...**")
-        try:
-            image = await get_last_image(ctx)
-        except IOError:
-            return await ctx.send("Last image isn't valid.")
+        image = await get_image(ctx)
         if not image:
-            return await ctx.send("Couldn't find valid image.")
+            return
+
         w, h = image.width, image.height
         image = image.resize((int(w ** .75), int(h ** .75)), resample=Image.LANCZOS)
         image = image.resize((int(w ** .88), int(h ** .88)), resample=Image.BILINEAR)
@@ -202,18 +192,16 @@ class Filters:
         if alpha:
             image.putalpha(alpha)
         image = ImageEnhance.Sharpness(image).enhance(100.0)
+
         await send_image(ctx, image)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def edges(self, ctx):
-        await ctx.send("**processing...**")
-        try:
-            image = await get_last_image(ctx)
-        except IOError:
-            return await ctx.send("Last image isn't valid.")
+        image = await get_image(ctx)
         if not image:
-            return await ctx.send("Couldn't find valid image.")
+            return
+
         try:
             alpha = image.getchannel('A')
         except ValueError:
@@ -226,25 +214,24 @@ class Filters:
         image = image.convert("RGBA")
         if alpha:
             image.putalpha(alpha)
+
         await send_image(ctx, image)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def rotate(self, ctx, rotation: str = 'right'):
-        await ctx.send("**processing...**")
         rotation = rotation.lower()
         if rotation not in ('left', 'right'):
             return await ctx.send("Rotation must be 'left' or 'right'.")
-        try:
-            image = await get_last_image(ctx)
-        except IOError:
-            return await ctx.send("Last image isn't valid.")
+        image = await get_image(ctx)
         if not image:
-            return await ctx.send("Couldn't find valid image.")
+            return
+
         if rotation == 'left':
             image = image.transpose(Image.ROTATE_90)
         else:
             image = image.transpose(Image.ROTATE_270)
+
         await send_image(ctx, image)
 
 
