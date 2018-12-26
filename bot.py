@@ -2,8 +2,11 @@ import discord
 from discord.ext import commands
 
 from sys import stderr
+import logging
 import os
 import traceback
+
+logging.basicConfig(level=logging.INFO)
 
 initial_extensions = ['cogs.frames',
                       'cogs.filters']
