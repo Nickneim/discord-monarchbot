@@ -242,9 +242,9 @@ class Filters:
         if not image:
             return await ctx.send("Couldn't find valid image.")
         if rotation == 'left':
-            image = image.transpose(Image.ROTATE_270)
-        else:
             image = image.transpose(Image.ROTATE_90)
+        else:
+            image = image.transpose(Image.ROTATE_270)
         await send_image(ctx, image)
 
 
