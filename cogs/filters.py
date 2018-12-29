@@ -11,18 +11,18 @@ class Filters:
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def blur(self, ctx):
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
 
         image = image.filter(ImageFilter.BLUR)
 
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def invert(self, ctx):
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
 
@@ -35,28 +35,28 @@ class Filters:
         if alpha:
             image.putalpha(alpha)
 
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def flipv(self, ctx):
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
 
         image = ImageOps.flip(image)
 
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def fliph(self, ctx):
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
 
         image = ImageOps.mirror(image)
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
@@ -64,7 +64,7 @@ class Filters:
         side = side.lower()
         if side not in ('left', 'right', 'up', 'down'):
             return await ctx.send("Valid sides are 'left', 'right', 'up', and 'down'.")
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
 
@@ -86,12 +86,12 @@ class Filters:
             crop = ImageOps.flip(crop)
             image.paste(crop, (0, 0))
 
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def posterize(self, ctx):
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
 
@@ -104,14 +104,14 @@ class Filters:
         if alpha:
             image.putalpha(alpha)
 
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def shrink(self, ctx, per: int = 5):
         if not (1 <= per <= 99):
             return await ctx.send("Percentage must be between 1 and 99")
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
 
@@ -120,12 +120,12 @@ class Filters:
         h = image.height * per // 100
         image.resize((w, h), resample=Image.LANCZOS)
 
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def glitch(self, ctx):
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
 
@@ -144,12 +144,12 @@ class Filters:
             image.putalpha(alpha)
         image = ImageEnhance.Sharpness(image).enhance(100.0)
 
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
     async def edges(self, ctx):
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
 
@@ -166,7 +166,7 @@ class Filters:
         if alpha:
             image.putalpha(alpha)
 
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command()
@@ -174,7 +174,7 @@ class Filters:
         rotation = rotation.lower()
         if rotation not in ('left', 'right'):
             return await ctx.send("Rotation must be 'left' or 'right'.")
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
 
@@ -183,7 +183,7 @@ class Filters:
         else:
             image = image.transpose(Image.ROTATE_270)
 
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
 
 def setup(bot):

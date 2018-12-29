@@ -69,7 +69,7 @@ class Frames:
         frame_name = ctx.invoked_with
         if frame_name == 'frame':
             return
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
         frame = await get_frame(ctx, frame_name)
@@ -78,7 +78,7 @@ class Frames:
 
         frame_on_image(frame, image)
 
-        await send_image(ctx, image)
+        await send_image(ctx, image, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.user)
     @commands.command(aliases=list(templates))
@@ -86,7 +86,7 @@ class Frames:
         frame_name = ctx.invoked_with
         if frame_name == 'template':
             return
-        image = await get_image(ctx)
+        image, image_message = await get_image(ctx)
         if not image:
             return
         frame = await get_frame(ctx, frame_name)
@@ -95,12 +95,12 @@ class Frames:
 
         image_inside_frame(image, frame, Frames.templates[frame_name])
 
-        await send_image(ctx, frame)
+        await send_image(ctx, frame, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.default)
     @commands.command()
     async def addtestframe(self, ctx):
-        test_image = await get_image(ctx)
+        test_image, image_message = await get_image(ctx)
         if not test_image:
             return
 

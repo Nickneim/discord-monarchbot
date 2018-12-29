@@ -21,30 +21,30 @@ async def get_last_image(ctx, limit=20):
     if attachment:
         f = io.BytesIO()
         await attachment.save(f)
-        return Image.open(f)
+        return Image.open(f), ctx.message
     async for m in ctx.history(before=ctx.message, limit=limit):
         attachment = get_message_attachment(m)
         if attachment:
             f = io.BytesIO()
             await attachment.save(f)
-            return Image.open(f)
-    return None
+            return Image.open(f), m
+    return None, None
 
 
 async def get_image(ctx):
-    await ctx.send("**processing...**")
+    await ctx.trigger_typing()
     try:
-        image = await get_last_image(ctx)
+        image, message = await get_last_image(ctx)
     except IOError:
         await ctx.send("Last image isn't valid.")
-        return None
+        return None, None
     if not image:
         await ctx.send("Couldn't find valid image.")
-        return None
-    return image
+        return None, None
+    return image, message
 
 
-async def send_image(ctx, image):
+async def send_image(ctx, image, image_message):
     with io.BytesIO() as f:
         try:
             image.save(f, format='png')
@@ -52,6 +52,12 @@ async def send_image(ctx, image):
             return await ctx.send("Image couldn't be saved.")
         f.seek(0)
         await ctx.send(file=discord.File(f, filename='image.png'))
+    try:
+        await ctx.message.delete()
+    except discord.Forbidden:
+        pass
+    if image_message.author.id == ctx.me.id:
+        await image_message.delete()
 
 
 async def get_frame(ctx, frame):
