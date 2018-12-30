@@ -56,8 +56,8 @@ async def send_image(ctx, image, image_message):
         await ctx.message.delete()
     except discord.Forbidden:
         pass
-    if image_message.author.id == ctx.me.id:
-        await image_message.delete()
+#    if image_message.author.id == ctx.me.id:
+#        await image_message.delete()
 
 
 async def get_frame(ctx, frame):
