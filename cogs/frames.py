@@ -56,6 +56,7 @@ class Frames:
         'rapper': (0, 66, 522, 510),
         'science': (0, 147, 1000, 833),
         'son': (0, 86, 569, 613),
+        'testtemplate': (50, 90, 537, 285),
         'wedding': (158, 12, 394, 257),
         'wtc1': (0, 0, 300, 238),
     }
@@ -106,6 +107,25 @@ class Frames:
 
         try:
             test_image.convert("RGBA").save("frames/testframe.png")
+        except IOError:
+            return await ctx.send("Image couldn't be saved.")
+        return await ctx.send("Changed test frame")
+
+    @commands.cooldown(1, 5, commands.BucketType.default)
+    @commands.command()
+    async def addtesttemplate(self, ctx, x1: int, y1: int, x2: int, y2: int):
+        if x1 >= x2 or y1 >= y2 or x1 < 0 or y1 < 0:
+            return await ctx.send("Those coordinates don't seem valid.")
+
+        test_image, image_message = await get_image(ctx)
+        if not test_image:
+            return
+        if test_image.width < x2 or test_image.height < y2:
+            return await ctx.send("Box goes outside of template.")
+
+        try:
+            test_image.convert("RGBA").save("frames/testtemplate.png")
+            Frames.templates['testtemplate'] = (x1, y1, x2, y2)
         except IOError:
             return await ctx.send("Image couldn't be saved.")
         return await ctx.send("Changed test frame")
