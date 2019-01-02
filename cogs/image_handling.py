@@ -51,7 +51,7 @@ async def send_image(ctx, image, image_message):
         except IOError:
             return await ctx.send("Image couldn't be saved.")
         f.seek(0)
-        await ctx.send(file=discord.File(f, filename='image.png'))
+        await ctx.send(file=discord.File(f, filename=ctx.invoked_with + '.png'))
     try:
         await ctx.message.delete()
     except discord.Forbidden:
