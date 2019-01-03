@@ -130,6 +130,37 @@ class Frames:
             return await ctx.send("Image couldn't be saved.")
         return await ctx.send("Changed test frame")
 
+    @commands.cooldown(1, 5, commands.BucketType.default)
+    @commands.command()
+    async def detecttemplate(self, ctx):
+        image, image_message = await get_image(ctx)
+        if not image:
+            return
+        try:
+            image = image.getchannel('A')
+        except ValueError:
+            return await ctx.send("That image doesn't have an alpha channel.")
+        x1 = image.width
+        y1 = image.height
+        x2 = 0
+        y2 = 0
+        i = 0
+        for pixel in image.getdata():
+            if pixel != 255:
+                x = i % image.width
+                y = i // image.width
+                if x < x1:
+                    x1 = x
+                if y < y1:
+                    y1 = y
+                if x > x2:
+                    x2 = x
+                if y > y2:
+                    y2 = y
+            i += 1
+
+        await ctx.send(f"({x1}, {y1}, {x2}, {y2})")
+
 
 def setup(client):
     client.add_cog(Frames(client))
