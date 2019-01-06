@@ -7,7 +7,7 @@ def get_message_attachment(message, allowed_extensions=('.jpg', '.jpeg', '.png')
     """Returns the first attachment from 'message' if it exists and it's a recognized image, otherwise returns None"""
     if message.attachments:
         attachment = message.attachments[0]
-        if attachment.filename.endswith(allowed_extensions):
+        if attachment.filename.lower().endswith(allowed_extensions):
             return attachment
     return None
 
