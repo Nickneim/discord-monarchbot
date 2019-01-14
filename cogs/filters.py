@@ -145,11 +145,10 @@ class Filters:
         image, image_message = await get_image(ctx)
         if not image:
             return
-
         image = image.convert("RGBA")
         w = image.width * per // 100
         h = image.height * per // 100
-        image.resize((w, h), resample=Image.LANCZOS)
+        image = image.resize((w, h), resample=Image.LANCZOS)
 
         await send_image(ctx, image, image_message)
 
