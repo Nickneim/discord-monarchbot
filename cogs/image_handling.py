@@ -12,6 +12,45 @@ def get_message_attachment(message, allowed_extensions=('.jpg', '.jpeg', '.png')
     return None
 
 
+def open_image(file):
+    image = Image.open(file)
+    try:
+        exif = image._getexif()
+    except AttributeError:
+        orientation = None
+    else:
+        orientation = exif and exif.get(274)
+
+    if image.width > 800 or image.height > 800:
+        if image.width > image.height:
+            width = 800
+            height = image.height * 800 // image.width
+        else:
+            height = 800
+            width = image.width * 800 // image.height
+        image = image.resize((width, height), resample=Image.LANCZOS)
+
+    if not orientation or orientation == 1:
+        pass
+    elif orientation == 2:
+        image = image.transpose(Image.FLIP_LEFT_RIGHT)
+    elif orientation == 3:
+        image = image.transpose(Image.ROTATE_180)
+    elif orientation == 4:
+        image = image.transpose(Image.FLIP_TOP_BOTTOM)
+    elif orientation == 5:
+        image = image.transpose(Image.FLIP_TOP_BOTTOM)
+        image = image.transpose(Image.ROTATE_270)
+    elif orientation == 6:
+        image = image.transpose(Image.ROTATE_270)
+    elif orientation == 7:
+        image = image.transpose(Image.FLIP_LEFT_RIGHT)
+        image = image.transpose(Image.ROTATE_270)
+    elif orientation == 8:
+        image = image.transpose(Image.ROTATE_90)
+    return image
+
+
 async def get_last_image(ctx, limit=20):
     """
     Returns the last image in the last 'limit' messages in the 'ctx' channel
@@ -27,7 +66,8 @@ async def get_last_image(ctx, limit=20):
         if attachment:
             f = io.BytesIO()
             await attachment.save(f)
-            return Image.open(f), m
+            image = open_image(f)
+            return image, m
     return None, None
 
 
