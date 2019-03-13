@@ -1,6 +1,7 @@
 from discord.ext import commands
 from PIL import Image, ImageDraw
 from .image_handling import get_image, send_image, get_frame
+from .filters import filters, advanced_filters
 
 
 def frame_on_image(frame, image):
@@ -110,7 +111,7 @@ class Frames:
             return
 
         image_inside_frame(image, frame, Frames.templates[frame_name])
-
+        print(filters)
         await send_image(ctx, frame, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.default)
@@ -242,6 +243,79 @@ class Frames:
         draw.rectangle(coords, outline=(255, 0, 0, 255), width=2)
         await send_image(ctx, image, ctx.message)
         await ctx.send(str(coords))
+
+    @commands.cooldown(1, 5, commands.BucketType.default)
+    @commands.command()
+    async def pipe(self, ctx, *, pipe_string: str):
+        """Performs a series of frames and templates on an image"""
+        command_list = pipe_string.split()
+        advanced_filter_command = None
+        for command_name in command_list:
+            if advanced_filter_command:
+                if advanced_filter_command == 'symm':
+                    side = command_name.lower()
+                    if side not in ('left', 'right', 'top', 'bottom'):
+                        return await ctx.send("Valid sides are 'left', 'right', 'top', and 'bottom'.")
+                elif advanced_filter_command == 'shrink':
+                    try:
+                        per = int(command_name)
+                    except ValueError:
+                        return await ctx.send("The percentage to shrink must be a number.")
+                    if not (1 <= per <= 99):
+                        return await ctx.send("Percentage must be between 1 and 99.")
+                elif advanced_filter_command == 'rotate':
+                    rotation = command_name.lower()
+                    if rotation not in ('left', 'right'):
+                        return await ctx.send("Rotation must be 'left' or 'right'.")
+                advanced_filter_command = None
+            elif command_name in Frames.frames:
+                continue
+            elif command_name in Frames.templates:
+                continue
+            elif command_name in filters:
+                continue
+            elif command_name in advanced_filters:
+                advanced_filter_command = command_name
+                continue
+            else:
+                return await ctx.send(f"{command_name} is not a frame or a template or a filter.")
+        image, image_message = await get_image(ctx)
+        if not image:
+            return
+
+        advanced_filter_command = None
+        for command_name in command_list:
+            if advanced_filter_command:
+                if advanced_filter_command == 'symm':
+                    side = command_name.lower()
+                    image = advanced_filters['symm'](image, side)
+                elif advanced_filter_command == 'shrink':
+                    per = int(command_name)
+                    image = advanced_filters['shrink'](image, per)
+                elif advanced_filter_command == 'rotate':
+                    rotation = command_name .lower()
+                    image = advanced_filters['rotate'](image, rotation)
+                advanced_filter_command = None
+            elif command_name in Frames.frames:
+                frame = await get_frame(ctx, command_name)
+                if not frame:
+                    return
+                frame_on_image(frame, image)
+            elif command_name in Frames.templates:
+                frame = await get_frame(ctx, command_name)
+                if not frame:
+                    return
+                image_inside_frame(image, frame, Frames.templates[command_name])
+                image = frame
+            elif command_name in filters:
+                image = filters[command_name](image)
+            elif command_name in advanced_filters:
+                advanced_filter_command = command_name
+        if advanced_filter_command:
+            image = advanced_filters[command_name](image)
+        await send_image(ctx, image, image_message)
+
+
 
 
 def setup(client):
