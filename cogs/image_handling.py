@@ -51,7 +51,7 @@ def open_image(file):
     return image
 
 
-async def get_last_image(ctx, limit=20):
+async def get_last_image(ctx, limit=100):
     """
     Returns the last image in the last 'limit' messages in the 'ctx' channel
     Raises IOError if last image isn't a valid image
