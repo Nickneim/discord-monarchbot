@@ -111,3 +111,16 @@ mario
 fight
 neelix
 cnidarian
+shoot
+garrison
+fight2
+fight3
+felt
+heart1
+heart2
+heart3
+gun
+amici
+jojo
+momo
+momo2
