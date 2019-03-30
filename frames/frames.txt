@@ -148,3 +148,4 @@ starry
 chimp
 toilet
 db
+thumbsup
