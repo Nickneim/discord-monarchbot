@@ -1,4 +1,3 @@
-ac
 acab
 al
 amouranth
@@ -78,7 +77,6 @@ sam
 sb
 shapiro
 shrek
-shutterstock
 sketch
 socks
 sonic
@@ -102,7 +100,6 @@ warcrime
 wasted
 wish
 wtc2
-zucc
 zucc1
 zucc2
 zucc3
@@ -151,3 +148,6 @@ db
 thumbsup
 marvel
 marvel2
+bitmoji
+may
+tsdbitmoji
