@@ -6,7 +6,7 @@ import logging
 import os
 import traceback
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename="monarchbot.log", level=logging.INFO)
 
 initial_extensions = ['cogs.frames',
                       'cogs.filters']

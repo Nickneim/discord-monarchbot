@@ -34,6 +34,7 @@ def wrap_text(draw, font, text, width):
     return result.rstrip()
 
 
+
 def blur(image):
     return image.filter(ImageFilter.BLUR)
 
@@ -140,6 +141,33 @@ def rotate(image, rotation='right'):
         return image.transpose(Image.ROTATE_270)
 
 
+def transparent(image):
+    image = image.convert("RGBA")
+    alpha = image.getchannel('A')
+    p = 0
+    for (r, g, b, a) in image.getdata():
+        if abs(r-g) + abs(g-b) < 10:
+            x = p % alpha.width
+            y = p // alpha.width
+            if a > 255 - min(r, g, b):
+                alpha.putpixel((x, y), 255 - min(r, g, b))
+        p += 1
+    image.putalpha(alpha)
+    return image
+
+
+def grayscale(image):
+    try:
+        alpha = image.getchannel('A')
+    except ValueError:
+        alpha = None
+    image = ImageOps.grayscale(image)
+    image = image.convert("RGBA")
+    if alpha:
+        image.putalpha(alpha)
+    return image
+
+
 filters = {
     'blur': blur,
     'invert': invert,
@@ -148,6 +176,8 @@ filters = {
     'posterize': posterize,
     'glitch': glitch,
     'edges': edges,
+    'transparent': transparent,
+    'grayscale': grayscale,
 }
 
 advanced_filters = {
@@ -157,7 +187,7 @@ advanced_filters = {
 }
 
 
-class Filters:
+class Filters(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot

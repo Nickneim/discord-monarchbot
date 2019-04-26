@@ -105,5 +105,5 @@ async def get_frame(ctx, frame):
     try:
         return Image.open(frame_path)
     except IOError:
-        await ctx.send("Couldn't open frame.")
+        await ctx.send(f"Couldn't open frame '{frame}'.")
         return None

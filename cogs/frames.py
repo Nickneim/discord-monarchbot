@@ -51,7 +51,7 @@ def detect_template(image):
     return x1, y1, x2, y2
 
 
-class Frames:
+class Frames(commands.Cog):
 
     try:
         with open("frames/frames.txt") as f:
@@ -111,7 +111,6 @@ class Frames:
             return
 
         image_inside_frame(image, frame, Frames.templates[frame_name])
-        print(filters)
         await send_image(ctx, frame, image_message)
 
     @commands.cooldown(1, 5, commands.BucketType.default)
