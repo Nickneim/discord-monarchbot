@@ -79,7 +79,7 @@ class Frames(commands.Cog):
         self.bot = bot
 
     @commands.cooldown(1, 5, commands.BucketType.user)
-    @commands.command(aliases=frames)
+    @commands.command(aliases=frames.copy())
     async def frame(self, ctx):
         """Paste the frame on the last image."""
         frame_name = ctx.invoked_with
@@ -164,11 +164,71 @@ class Frames(commands.Cog):
         with open('frames/frames.txt', 'a') as f:
             f.write(f'\n{frame_name}')
         command = self.bot.get_command('frame')
-        # just to be pretty, not actually important
         command.aliases.append(frame_name)
-        # this is what actually does the work
+        self.frames.append(frame_name)
         self.bot.all_commands[frame_name] = command
         await ctx.send(f"Added frame {frame_name}.")
+
+
+    @commands.cooldown(1, 5, commands.BucketType.default)
+    @commands.command(name="removeframe")
+    async def _remove_frame(self, ctx, frame_name: str):
+        """Remove a frame."""
+        if frame_name not in self.frames:
+            return await ctx.send("There's no frame with that name.")
+        self.frames.remove(frame_name)
+        self.bot.remove_command(frame_name)
+        with open('frames/frames.txt', 'w') as f:
+            f.write('\n'.join(self.frames))
+        await ctx.send(f"Removed frame {frame_name}.")
+
+    @commands.cooldown(1, 5, commands.BucketType.default)
+    @commands.command(name="removetemplate")
+    async def _remove_template(self, ctx, template_name: str):
+        """Remove a template."""
+        if template_name not in self.templates:
+            return await ctx.send("There's no template with that name.")
+        del self.templates[template_name]
+        self.bot.remove_command(template_name)
+        with open('frames/templates.txt', 'w') as f:
+            first_template = True
+            for template, coordinates in self.templates.items():
+                x1, y1, x2, y2 = coordinates
+                if first_template:
+                    f.write(f'{template} {x1} {y1} {x2} {y2}')
+                    first_template = False
+                else:
+                    f.write(f'\n{template} {x1} {y1} {x2} {y2}')
+        await ctx.send(f"Removed template {template_name}.")
+    @commands.cooldown(1, 5, commands.BucketType.default)
+
+    @commands.command(name="movetemplate")
+    async def move_template(self, ctx, template_name: str, x1: int, y1: int, x2: int, y2: int):
+        """Move a template's rectangle to (x1, y1, x2, y2)."""
+        if template_name not in self.templates:
+            return await ctx.send("There's no template with that name.")
+        if x1 >= x2 or y1 >= y2 or x1 < 0 or y1 < 0:
+            return await ctx.send("Those coordinates don't seem valid.")
+        
+        template, template_message = await get_image(ctx)
+        if not template:
+            return
+        if template.width < x2 or template.height < y2:
+            return await ctx.send("Box goes outside of template.")
+        
+        self.templates[template_name] = (x1, y1, x2, y2)
+
+        with open('frames/templates.txt', 'w') as f:
+            first_template = True
+            for template, coordinates in self.templates.items():
+                x1, y1, x2, y2 = coordinates
+                if first_template:
+                    f.write(f'{template} {x1} {y1} {x2} {y2}')
+                    first_template = False
+                else:
+                    f.write(f'\n{template} {x1} {y1} {x2} {y2}')
+        await ctx.send(f"Moved template box of {template_name} to ({x1}, {y1}, {x2}, {y2}).")
+    
 
     @commands.cooldown(1, 5, commands.BucketType.default)
     @commands.command(name="addtemplate")
@@ -193,9 +253,7 @@ class Frames(commands.Cog):
         with open('frames/templates.txt', 'a') as f:
             f.write(f'\n{template_name} {x1} {y1} {x2} {y2}')
         command = self.bot.get_command('template')
-        # just to be pretty, not actually important
         command.aliases.append(template_name)
-        # this is what actually does the work
         Frames.templates[template_name] = (x1, y1, x2, y2)
         self.bot.all_commands[template_name] = command
         await ctx.send(f"Added template {template_name} with box ({x1}, {y1}, {x2}, {y2}).")
