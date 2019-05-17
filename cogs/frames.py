@@ -2,6 +2,7 @@ from discord.ext import commands
 from PIL import Image, ImageDraw
 from .image_handling import get_image, send_image, get_frame
 from .filters import filters, advanced_filters
+import logging
 
 
 def frame_on_image(frame, image):
@@ -57,7 +58,7 @@ class Frames(commands.Cog):
         with open("frames/frames.txt") as f:
             frames = f.read().split()
     except FileNotFoundError:
-        print("Couldn't find frames/frames.txt.")
+        logging.warning("Couldn't find frames/frames.txt.")
         frames = []
 
     try:
@@ -68,17 +69,17 @@ class Frames(commands.Cog):
                 try:
                     x1, y1, x2, y2 = [int(x) for x in coords]
                 except ValueError as e:
-                    print(e)
+                    logging.warning(e)
                 else:
                     templates[template] = (x1, y1, x2, y2)
     except FileNotFoundError:
-        print("Couldn't find frames/templates.txt")
+        logging.warning("Couldn't find frames/templates.txt")
         templates = {}
 
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.cooldown(1, 5, commands.BucketType.user)
+
     @commands.command(aliases=frames.copy())
     async def frame(self, ctx):
         """Paste the frame on the last image."""
@@ -96,7 +97,7 @@ class Frames(commands.Cog):
 
         await send_image(ctx, image, image_message)
 
-    @commands.cooldown(1, 5, commands.BucketType.user)
+
     @commands.command(aliases=list(templates))
     async def template(self, ctx):
         """Insert the last image in the template."""
@@ -113,7 +114,7 @@ class Frames(commands.Cog):
         image_inside_frame(image, frame, Frames.templates[frame_name])
         await send_image(ctx, frame, image_message)
 
-    @commands.cooldown(1, 5, commands.BucketType.default)
+
     @commands.command()
     async def addtestframe(self, ctx):
         """Download the last image and add it as a test frame."""
@@ -127,7 +128,7 @@ class Frames(commands.Cog):
             return await ctx.send("Image couldn't be saved.")
         return await ctx.send("Changed test frame")
 
-    @commands.cooldown(1, 5, commands.BucketType.default)
+
     @commands.command()
     async def addtesttemplate(self, ctx, x1: int, y1: int, x2: int, y2: int):
         """Download the last image and add it as a test template."""
@@ -147,7 +148,7 @@ class Frames(commands.Cog):
             return await ctx.send("Image couldn't be saved.")
         return await ctx.send("Changed test template.")
 
-    @commands.cooldown(1, 5, commands.BucketType.default)
+
     @commands.command(name="addframe")
     async def _add_frame(self, ctx, frame_name: str):
         """Download the last image and add it as a frame."""
@@ -170,7 +171,6 @@ class Frames(commands.Cog):
         await ctx.send(f"Added frame {frame_name}.")
 
 
-    @commands.cooldown(1, 5, commands.BucketType.default)
     @commands.command(name="removeframe")
     async def _remove_frame(self, ctx, frame_name: str):
         """Remove a frame."""
@@ -182,7 +182,7 @@ class Frames(commands.Cog):
             f.write('\n'.join(self.frames))
         await ctx.send(f"Removed frame {frame_name}.")
 
-    @commands.cooldown(1, 5, commands.BucketType.default)
+
     @commands.command(name="removetemplate")
     async def _remove_template(self, ctx, template_name: str):
         """Remove a template."""
@@ -200,7 +200,7 @@ class Frames(commands.Cog):
                 else:
                     f.write(f'\n{template} {x1} {y1} {x2} {y2}')
         await ctx.send(f"Removed template {template_name}.")
-    @commands.cooldown(1, 5, commands.BucketType.default)
+
 
     @commands.command(name="movetemplate")
     async def move_template(self, ctx, template_name: str, x1: int, y1: int, x2: int, y2: int):
@@ -230,7 +230,6 @@ class Frames(commands.Cog):
         await ctx.send(f"Moved template box of {template_name} to ({x1}, {y1}, {x2}, {y2}).")
     
 
-    @commands.cooldown(1, 5, commands.BucketType.default)
     @commands.command(name="addtemplate")
     async def _add_template(self, ctx, template_name: str, x1: int, y1: int, x2: int, y2: int):
         """Download the last image and add it as a template with rectangle (x1, y1, x2, y2)."""
@@ -258,7 +257,7 @@ class Frames(commands.Cog):
         self.bot.all_commands[template_name] = command
         await ctx.send(f"Added template {template_name} with box ({x1}, {y1}, {x2}, {y2}).")
 
-    @commands.cooldown(1, 5, commands.BucketType.user)
+
     @commands.command()
     async def check_template(self, ctx, template_name, x1: int = None, y1: int = None, x2: int = None, y2: int = None):
         """Draw a rectangle in a template. Rectangle defaults to the template's rectangle."""
@@ -281,12 +280,7 @@ class Frames(commands.Cog):
 
         await send_image(ctx, frame, ctx.message)
 
-    @commands.is_owner()
-    @commands.command(name='eval', hidden=True)
-    async def _eval(self, ctx, *, to_eval: str):
-        print(eval(to_eval))
 
-    @commands.cooldown(1, 5, commands.BucketType.default)
     @commands.command(name="detecttemplate")
     async def _detect_template(self, ctx):
         """Detects a transparent rectangle for the last image as a template and draws it."""
@@ -301,7 +295,7 @@ class Frames(commands.Cog):
         await send_image(ctx, image, ctx.message)
         await ctx.send(str(coords))
 
-    @commands.cooldown(1, 5, commands.BucketType.default)
+
     @commands.command()
     async def pipe(self, ctx, *, pipe_string: str):
         """Performs a series of frames and templates on an image"""

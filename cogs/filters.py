@@ -34,7 +34,6 @@ def wrap_text(draw, font, text, width):
     return result.rstrip()
 
 
-
 def blur(image):
     return image.filter(ImageFilter.BLUR)
 
@@ -192,7 +191,7 @@ class Filters(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.cooldown(1, 5, commands.BucketType.user)
+
     @commands.command(aliases=list(filters))
     async def filter(self, ctx):
         filter_name = ctx.invoked_with
@@ -206,7 +205,7 @@ class Filters(commands.Cog):
 
         await send_image(ctx, image, image_message)
 
-    @commands.cooldown(1, 5, commands.BucketType.user)
+
     @commands.command()
     async def symm(self, ctx, side: str = "left"):
         side = side.lower()
@@ -236,7 +235,7 @@ class Filters(commands.Cog):
 
         await send_image(ctx, image, image_message)
 
-    @commands.cooldown(1, 5, commands.BucketType.user)
+
     @commands.command()
     async def shrink(self, ctx, per: int = 5):
         if not (1 <= per <= 99):
@@ -251,7 +250,7 @@ class Filters(commands.Cog):
 
         await send_image(ctx, image, image_message)
 
-    @commands.cooldown(1, 5, commands.BucketType.user)
+
     @commands.command()
     async def rotate(self, ctx, rotation: str = 'right'):
         rotation = rotation.lower()
@@ -268,7 +267,7 @@ class Filters(commands.Cog):
 
         await send_image(ctx, image, image_message)
 
-    @commands.cooldown(1, 5, commands.BucketType.user)
+
     @commands.command()
     async def impact(self, ctx, *, text: str):
         image, image_message = await get_image(ctx)
