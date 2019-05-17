@@ -100,10 +100,18 @@ async def send_image(ctx, image, image_message):
 #        await image_message.delete()
 
 
-async def get_frame(ctx, frame):
+def get_frame(frame):
     frame_path = "frames/" + frame + ".png"
     try:
         return Image.open(frame_path)
     except IOError:
-        await ctx.send(f"Couldn't open frame '{frame}'.")
         return None
+
+
+def get_template(template):
+    template_path = "frames/" + template + ".png"
+    try:
+        return Image.open(template_path)
+    except IOError:
+        return None
+

@@ -1,23 +1,26 @@
 from discord.ext import commands
 from PIL import Image, ImageDraw
-from .image_handling import get_image, send_image, get_frame
+from .image_handling import get_image, send_image, get_frame, get_template
 from .filters import filters, advanced_filters
 import logging
 
 
-def frame_on_image(frame, image):
+def apply_frame(image, frame):
     """Modifies image by resizing image to its size and pasting it"""
     frame = frame.resize(image.size, Image.LANCZOS)
     image.paste(frame, (0, 0), frame)
+    return image
 
 
-def image_inside_frame(image, frame, box):
-    """Modifies frame by inserting image in box part of frame"""
+def apply_template(image, template, box):
+    """Modifies template by inserting image in box part of template"""
     box_size = (box[2]-box[0], box[3]-box[1])
     image = image.resize(box_size, Image.LANCZOS)
-    frame_crop = frame.crop(box)
-    frame.paste(image, box)
-    frame.paste(frame_crop, box, frame_crop)
+    template_crop = template.crop(box)
+    template.paste(image, box)
+    # we also paste the template over itself so the image is behind it
+    template.paste(template_crop, box, template_crop)
+    return template
 
 
 def detect_template(image):
@@ -89,11 +92,11 @@ class Frames(commands.Cog):
         image, image_message = await get_image(ctx)
         if not image:
             return
-        frame = await get_frame(ctx, frame_name)
+        frame = get_frame(frame_name)
         if not frame:
-            return
+            return await ctx.send(f"Couldn't open frame '{frame_name}'.")
 
-        frame_on_image(frame, image)
+        image = apply_frame(image, frame)
 
         await send_image(ctx, image, image_message)
 
@@ -101,18 +104,19 @@ class Frames(commands.Cog):
     @commands.command(aliases=list(templates))
     async def template(self, ctx):
         """Insert the last image in the template."""
-        frame_name = ctx.invoked_with
-        if frame_name == 'template':
+        template_name = ctx.invoked_with
+        if template_name == 'template':
             return
         image, image_message = await get_image(ctx)
         if not image:
             return
-        frame = await get_frame(ctx, frame_name)
-        if not frame:
-            return
+        template = get_template(template_name)
+        if not template:
+            return await ctx.send(f"Couldn't open template '{template_name}'.")
 
-        image_inside_frame(image, frame, Frames.templates[frame_name])
-        await send_image(ctx, frame, image_message)
+        image = apply_template(image, template, Frames.templates[template_name])
+
+        await send_image(ctx, image, image_message)
 
 
     @commands.command()
@@ -210,9 +214,9 @@ class Frames(commands.Cog):
         if x1 >= x2 or y1 >= y2 or x1 < 0 or y1 < 0:
             return await ctx.send("Those coordinates don't seem valid.")
         
-        template, template_message = await get_image(ctx)
+        template = get_template(template_name)
         if not template:
-            return
+            return await ctx.send(f"Couldn't open template '{template_name}'.")
         if template.width < x2 or template.height < y2:
             return await ctx.send("Box goes outside of template.")
         
@@ -271,14 +275,14 @@ class Frames(commands.Cog):
         else:
             x1, y1, x2, y2 = Frames.templates[template_name]
 
-        frame = await get_frame(ctx, template_name)
-        if not frame:
-            return
+        template = get_template(template_name)
+        if not template:
+            return await ctx.send(f"Couldn't open template '{template_name}'.")
 
-        draw = ImageDraw.Draw(frame)
+        draw = ImageDraw.Draw(template)
         draw.rectangle((x1, y1, x2, y2), outline=(255, 0, 0, 255), width=2)
 
-        await send_image(ctx, frame, ctx.message)
+        await send_image(ctx, template, ctx.message)
 
 
     @commands.command(name="detecttemplate")
@@ -348,16 +352,15 @@ class Frames(commands.Cog):
                     image = advanced_filters['rotate'](image, rotation)
                 advanced_filter_command = None
             elif command_name in Frames.frames:
-                frame = await get_frame(ctx, command_name)
+                frame = get_frame(command_name)
                 if not frame:
-                    return
-                frame_on_image(frame, image)
+                    return await ctx.send(f"Couldn't open frame '{frame_name}'.")
+                image = apply_frame(image, frame)
             elif command_name in Frames.templates:
-                frame = await get_frame(ctx, command_name)
-                if not frame:
-                    return
-                image_inside_frame(image, frame, Frames.templates[command_name])
-                image = frame
+                template = get_template(command_name)
+                if not template:
+                    return await ctx.send(f"Couldn't open template '{template_name}'.")
+                image = apply_template(image, template, Frames.templates[command_name])
             elif command_name in filters:
                 image = filters[command_name](image)
             elif command_name in advanced_filters:
